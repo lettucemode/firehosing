@@ -150,7 +150,7 @@ public class AtprotoFrame {
         if (major != AtprotoDataType.UTF8String) throw new Exception("major type is not utf8 string");
         var arg = GetCborArgument(bytes, ref index);
         index += (int)arg.Value;
-        return Encoding.UTF8.GetString(new ArraySegment<byte>(bytes, index - (int)arg.Value, (int)arg.Value));
+        return Encoding.UTF8.GetString(new ArraySegment<byte>(bytes, index - (int)arg.Value, (int)arg.Value)); // questionable cast
     }
 
     private static long DecodeInteger(byte[] bytes, ref int index) {
@@ -162,6 +162,10 @@ public class AtprotoFrame {
         return major == (int)AtprotoDataType.PositiveInteger
             ? (long)arg.Value
             : -1 - (long)arg.Value; // questionable cast
+        // also, idk what's going on with the numbers here
+        // cbor spec makes these effectively 65-bit integers, but
+        // atproto spec suggests never having these longer than 53 bits anyway.
+        // so we punt and make em all longs
     }
 
     private enum AtprotoDataType {
